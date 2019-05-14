@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+
+{% block content %}
+
+{%if all_blogs == []%}
+
+    <p>The blogs are empty</p>
+    <br/>
+    <h2>Go write something</h2>
+
+{% endif %}
+
+
+{% for blog in all_blogs %}
+
+    <a href ="/blog?id={{blog.id}}">{{blog.title}}</a>
+    <!-- <h3>{{blog.title}}</h3> -->
+    <p>{{blog.blog_post}}</p>
+
+
+
+{% endfor %}
+
+
+
+{% endblock %}

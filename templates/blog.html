@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block content %}
+    
+    <form method='post'>
+        <label>
+            blog title:
+            <input type="text" name='title' value = "{{title_input}}" />
+        </label>
+
+        <p class = "error">{{title_error}}</p>
+        <br />
+        <br />
+        <br />
+        <label>
+            blog body:
+            <textarea type="text" name="body" value = "{{blog_body}}">{{blog_body}}</textarea>
+        </label>
+        <p class = "error">{{blog_error}}</p>
+        <!-- <input type="submit" value='Add Task' /> -->
+        <input type="submit" value='create post' />
+    </form>
+
+    
+
+     <hr />
+<!--
+    {% if tasks|length == 0 %}
+    <p>No tasks yet</p>
+    {% else %}
+
+        <ul>
+            {% for task in tasks %}
+            <li>{{task.name}}
+                <form action="/delete-task" method= "POST" style="display:inline-block;">
+                    <input type="hidden" name = "task-id" value= "{{task.id}}" />
+                    <input type="submit" value ="Done!" />
+        
+                </form>
+            </li>
+            {% endfor %}
+        </ul>
+
+        
+
+    {% endif %}
+
+
+    <hr />
+    <h2>Completed Tasks</h2>
+    <ul>
+        {% for task in completed_tasks %}
+        <li>{{task.name}}</li>
+        {% endfor %}
+    </ul> -->
+{% endblock %}
+
