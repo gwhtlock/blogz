@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+
+{% block content %}
+
+{%if users == []%}
+
+    <p>no users in the system</p>
+    <br/>
+    <h2>Be the First to signup!!!</h2>
+
+{% endif %}
+
+
+{% for user in users %}
+
+    <a href ="/blog?user={{user.id}}">{{user.username}}</a>
+    <!-- <h3>{{blog.title}}</h3> -->
+    <!-- <p>{{blog.blog_post}}</p> -->
+
+
+
+{% endfor %}
+
+
+
+{% endblock %}

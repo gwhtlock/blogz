@@ -31,12 +31,14 @@ class Blog(db.Model):
 class User(db.Model):
 
     id= db.Column(db.Integer, primary_key=True)
-    email = db.Column(db.String(120), unique = True)
+    username = db.Column(db.String(120), unique = True)
+    # email = db.Column(db.String(120), unique = True)
     password = db.Column(db.String(120))
     blog = db.relationship('Blog', backref='owner')
 
-    def __init__(self,email, password):
-        self.email = email
+    def __init__(self,username, password):
+        # self.email = email
+        self.username = username
         self.password = password
 
        
@@ -70,6 +72,9 @@ def index():
     # tasks = Task.query.all() this query gets all items in the database
     # tasks = Task.query.filter_by(completed=False, owner=owner).all()
     # completed_tasks = Task.query.filter_by(completed=True, owner= owner).all()
+
+    users = User.query.all()
+
     return render_template('base.html',title="The Blog!")
 
 @app.route('/newpost', methods=['POST', 'GET'])
@@ -79,7 +84,8 @@ def new_blog():
     title_error = ""
     blog_error = ""
 
-    owner = User.query.filter_by(email=session['email']).first()
+    # owner = User.query.filter_by(email=session['email']).first()
+    owner = User.query.filter_by(username = session['username']).first()
 
     if request.method == 'POST':
 
@@ -110,10 +116,38 @@ def new_blog():
 @app.route('/blog', methods=['POST', 'GET'])
 def see_the_blogs():
 
-    owner = User.query.filter_by(email=session['email']).first()
+    # owner = User.query.filter_by(email=session['email']).first()
+    blog_id = request.args.get('id')
+    # user_id = request.args.get('user')
+
+    
+
+    
+
+    if not session:
+
+        if (blog_id):
+            blog = Blog.query.get(blog_id)
+            return render_template('oneblog.html',title="The Blog!", blog = blog)
+
+        # if(user_id):
+        #     user_blogs = Blog.query.filter_by(user_id).all()
+        #     return render_template('mainblog.html',title="The Blog!", all_blogs = user_blogs)
+
+        all_blogs = Blog.query.all()
+        return render_template('mainblog.html',title="The Blog!", all_blogs = all_blogs)
+    
+
 
     # filters all blogs to display only blogs for the current user
+    # all_blogs = Blog.query.filter_by(owner = owner).all()
+    owner = User.query.filter_by(username = session['username']).first()
     all_blogs = Blog.query.filter_by(owner = owner).all()
+
+    # if(user_id):
+    #     user_blogs = Blog.query.filter_by(user_id).all()
+    #     return render_template('mainblog.html',title="The Blog!", all_blogs = user_blogs)
+
 
     blog_id = request.args.get('id')
 
@@ -145,28 +179,34 @@ def see_the_blogs():
 @app.before_request
 def require_login():
 
-    allowed_routes = ['login', 'register']
+    allowed_routes = ['login', 'register','see_the_blogs','index']
 
-    if request.endpoint not in allowed_routes and 'email' not in session:
+    if request.endpoint not in allowed_routes and 'username' not in session:
         return redirect('/login')
 
 @app.route('/login', methods=['POST','GET'])
 def login():
 
     if request.method == 'POST':
-        email = request.form['email']
+    #    email = request.fo rm['email']
+        username = request.form['username']
         password = request.form['password']
-        user = User.query.filter_by(email = email).first()
+        # user = User.query.filter_by(email = email).first()
+        user = User.query.filter_by(username = username).first()
 
         if user and user.password == password:
             #TODO remeber user has logined
-            session['email'] = email
+            # session['email'] = email
+            session['username'] = username
             flash("Logged In")
             print(session)
-            return redirect('/')
-        else:
+            return redirect('/newpost')
+        elif not user:
             #TODO expalin why login failed
-            flash('User password incorrect, or User does not exist', 'error')
+            flash('User does not exist', 'error')
+        elif password != user.password:
+            #TODO expalin why login failed
+            flash('Incorrect Password', 'error')
             
 
 
@@ -176,35 +216,61 @@ def login():
 @app.route('/register', methods=['POST','GET'])
 def register():
 
+    flash_message =""
     if request.method == 'POST':
-        email = request.form['email']
+        # email = request.form['email']
+        username = request.form['username']
         password = request.form['password']
         verify = request.form['verify']
+        verification =True
+        
 
         #TODO validate user's data
 
-        existing_user = User.query.filter_by(email = email).first()
+        # existing_user = User.query.filter_by(email = email).first()
+        existing_user = User.query.filter_by(username = username).first()
 
-        if password != verify:
-            return "<h1> passwords dont match </h1>"
+        if not username:
+            flash_message += "No Username entered," + "     "
+            verification = False
+        elif len(username) <= 3:
+            flash_message += "Username must be greater than 3 characters,"+ "     "
+            verification = False
+        elif existing_user:
+            # TODO - Better User response
+            flash_message += "Username already exists"+"     "
+        
+        
+        if not password  or not verify:
+            flash_message += "Must complete both password fields," + "     "
+            verification = False
+        elif len(password) <= 3:
+            flash_message += "password must be greater than 3 characters,"+ "     "
+            verification = False
+        elif password != verify:
+            flash_message += "The passwords do not match,"+ "     "
+            verification = False
 
-        if not existing_user:
-            new_user = User(email, password)
+        
+
+        if not existing_user and verification:
+            new_user = User(username, password)
             db.session.add(new_user)
             db.session.commit()
             #TODO - remeber the user
-            session['email'] = email
-            return redirect('/')
-        else:
-            # TODO - Better User response
-            return "<h1>Duplicate User</h1>"
+            # session['email'] = email
+            session['username'] = username
+            return redirect('/newpost')
+        
 
+    flash(flash_message)
     return render_template('register.html')
 
 
 @app.route('/logout')
 def logout():
-    del session['email']
+    # del session['email']
+    del session['username']
     return redirect('/')
 
 
