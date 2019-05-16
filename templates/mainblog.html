@@ -18,6 +18,12 @@
     <!-- <h3>{{blog.title}}</h3> -->
     <p>{{blog.blog_post}}</p>
 
+    {%for user in users %}
+        {%if blog.owner_id == user.id%}
+            <p>Written by: <a href ="/blog?user={{user.id}}">{{user.username}}</a></p>
+        {% endif %}
+    {% endfor %}
+
 
 
 {% endfor %}

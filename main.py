@@ -74,8 +74,9 @@ def index():
     # completed_tasks = Task.query.filter_by(completed=True, owner= owner).all()
 
     users = User.query.all()
+    blog = Blog.query.all()
 
-    return render_template('base.html',title="The Blog!")
+    return render_template('index.html',title="The Blog!", users=users)
 
 @app.route('/newpost', methods=['POST', 'GET'])
 def new_blog():
@@ -118,29 +119,33 @@ def see_the_blogs():
 
     # owner = User.query.filter_by(email=session['email']).first()
     blog_id = request.args.get('id')
-    # user_id = request.args.get('user')
+    user_id = request.args.get('user')
 
     
 
     
 
-    if not session:
+    if  'username' not in session:
 
         if (blog_id):
             blog = Blog.query.get(blog_id)
-            return render_template('oneblog.html',title="The Blog!", blog = blog)
+            users = User.query.all()
+            return render_template('oneblog.html',title="The Blog!", blog = blog, users = users)
 
-        # if(user_id):
-        #     user_blogs = Blog.query.filter_by(user_id).all()
-        #     return render_template('mainblog.html',title="The Blog!", all_blogs = user_blogs)
-
+        if(user_id):
+            user_blogs = Blog.query.filter_by(owner_id = user_id).all()
+            user = User.query.get(user_id)
+            return render_template('mainblog.html',title="The Blog!", all_blogs = user_blogs, user = user)
+        
+        users = User.query.all()
         all_blogs = Blog.query.all()
-        return render_template('mainblog.html',title="The Blog!", all_blogs = all_blogs)
+        return render_template('mainblog.html',title="The Blog!", all_blogs = all_blogs, users = users)
     
 
 
     # filters all blogs to display only blogs for the current user
     # all_blogs = Blog.query.filter_by(owner = owner).all()
+    
     owner = User.query.filter_by(username = session['username']).first()
     all_blogs = Blog.query.filter_by(owner = owner).all()
 
@@ -151,12 +156,29 @@ def see_the_blogs():
 
     blog_id = request.args.get('id')
 
+    # if (blog_id):
+    #     blog = Blog.query.get(blog_id)
+    #     return render_template('oneblog.html',title="The Blog!", blog = blog)
+    # if(user_id):
+    #         user_blogs = Blog.query.filter_by(owner_id = user_id).all()
+    #         return render_template('mainblog.html',title="The Blog!", all_blogs = user_blogs)
+
+
+    # return render_template('mainblog.html',title="The Blog!", all_blogs = all_blogs)
+
     if (blog_id):
-        blog = Blog.query.get(blog_id)
-        return render_template('oneblog.html',title="The Blog!", blog = blog)
+            blog = Blog.query.get(blog_id)
+            users = User.query.all()
+            return render_template('oneblog.html',title="The Blog!", blog = blog, users = users)
 
-
-    return render_template('mainblog.html',title="The Blog!", all_blogs = all_blogs)
+    if(user_id):
+        user_blogs = Blog.query.filter_by(owner_id = user_id).all()
+        user = User.query.get(user_id)
+        return render_template('mainblog.html',title="The Blog!", all_blogs = user_blogs, user = user)
+        
+    users = User.query.all()
+    all_blogs = Blog.query.all()
+    return render_template('mainblog.html',title="The Blog!", all_blogs = all_blogs, users = users)
 
 
 
@@ -182,6 +204,7 @@ def require_login():
     allowed_routes = ['login', 'register','see_the_blogs','index']
 
     if request.endpoint not in allowed_routes and 'username' not in session:
+    # if request.endpoint not in allowed_routes and  not session:
         return redirect('/login')
 
 @app.route('/login', methods=['POST','GET'])
